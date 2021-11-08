@@ -1,0 +1,19 @@
+---
+# RedHat/CentOS
+- name: install packages - ensure latest (yum)
+  ansible.builtin.yum:
+    name: "{{ packages_yum_latest }}"
+    state: latest
+  when: ansible_pkg_mgr == 'yum' and packages_yum_latest|length > 0
+
+- name: install packages - ensure present (yum)
+  ansible.builtin.yum:
+    name: "{{ packages_yum_present }}"
+    state: present
+  when: ansible_pkg_mgr == 'yum' and packages_yum_present|length > 0
+
+- name: update all packages (yum)
+  ansible.builtin.yum:
+    name: "*"
+    state: latest
+  when: ansible_pkg_mgr == 'yum' and packages_update_available|bool == yes

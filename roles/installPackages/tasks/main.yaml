@@ -1,0 +1,7 @@
+---
+- include_tasks: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - "pkg-{{ ansible_pkg_mgr }}.yaml"
+#EOF

@@ -1,0 +1,19 @@
+---
+# Fedora
+- name: install packages - ensure latest (dnf)
+  ansible.builtin.dnf:
+    name: "{{ packages_dnf_latest }}"
+    state: latest
+  when: ansible_pkg_mgr == 'dnf' and packages_dnf_latest|length > 0
+
+- name: install packages - ensure present (dnf)
+  ansible.builtin.dnf:
+    name: "{{ packages_dnf_present }}"
+    state: present
+  when: ansible_pkg_mgr == 'dnf' and packages_dnf_present|length > 0
+
+- name: update all packages (dnf)
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest
+  when: ansible_pkg_mgr == 'dnf' and packages_update_available|bool == yes

@@ -1,0 +1,21 @@
+---
+# Ubuntu/Debian
+- name: install packages - ensure latest (apt)
+  ansible.builtin.apt:
+    name: "{{ packages_apt_latest }}"
+    update_cache: yes
+    state: latest
+  when: ansible_pkg_mgr == 'apt' and packages_apt_latest|length > 0
+
+- name: install packages - ensure present (apt)
+  ansible.builtin.apt:
+    name: "{{ packages_apt_present }}"
+    update_cache: yes
+    state: present
+  when: ansible_pkg_mgr == 'apt' and packages_apt_present|length > 0
+
+- name: update all packages (apt)
+  ansible.builtin.apt:
+    upgrade: yes
+    update_cache: yes
+  when: ansible_pkg_mgr == 'apt' and packages_update_available|bool == true

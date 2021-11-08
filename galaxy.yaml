@@ -1,0 +1,10 @@
+namespace: "zloveless"
+name: "common"
+version: "1.0"
+readme: "README.md"
+authors:
+  - "Zack Loveless (https://zloveless.com)"
+dependencies:
+  "community.general": ">=3.0.0"
+  "community.crypto": ">=1.9.6"
+  "ansible.posix": ">=1.2.0"

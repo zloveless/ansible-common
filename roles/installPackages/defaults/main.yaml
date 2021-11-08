@@ -1,0 +1,12 @@
+---
+# Gets or sets a value indicating whether to update all packages.
+packages_update_available: no
+
+packages_apt_latest: []
+packages_apt_present: []
+
+packages_yum_latest: []
+packages_yum_present: []
+
+packages_dnf_latest: []
+packages_dnf_present: []

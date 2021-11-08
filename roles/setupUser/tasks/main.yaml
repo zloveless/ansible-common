@@ -1,0 +1,42 @@
+---
+- name: create user on remote server
+  ansible.builtin.user:
+    state: present
+    create_home: yes
+    name: "{{ username }}"
+    home: "{{ home_dir | default('/home/' + username) }}"
+    # Generate an ssh key so that the .ssh folder is already set-up.
+    generate_ssh_key: yes
+    ssh_key_type: "ed25519"
+  when: username|default('root') != 'root'
+  register: create_user_result
+
+- name: generate .ssh folder for the superuser
+  community.crypto.openssh_keypair:
+    path: /root/.ssh/id_ed25519
+    regenerate: full_idempotence
+    type: ed25519
+    owner: root
+  when: username|default('root') == 'root'
+
+- name: configure authorized_keys for user
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/authorized_keys.j2"
+    dest: "{{ create_user_result.home }}/.ssh/authorized_keys"
+    mode: 0600
+    owner: "{{ create_user_result.name }}"
+    group: "{{ create_user_result.group }}"
+  when: authorized_keys is defined and (create_user_result is defined and create_user_result.changed)
+
+# For now, this just adds unrestricted sudo access.
+# TODO: Support sudo restrictions like user/command aliases, etc.
+- name: configure sudoers access for user
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/sudoers.j2"
+    dest: "/etc/sudoers.d/99-{{ username }}"
+    mode: 0600
+    owner: root
+    group: root
+    validate: 'visudo -cf %s'
+  when: allow_sudo|default(False)|bool
+#EOF

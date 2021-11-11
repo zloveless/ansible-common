@@ -1,6 +1,6 @@
 namespace: "zloveless"
 name: "common"
-version: "1.0"
+version: "1.0.0"
 readme: "README.md"
 license_file: "LICENSE"
 repository: "https://github.com/zloveless/ansible-common"

@@ -26,7 +26,7 @@
     mode: 0600
     owner: "{{ create_user_result.name }}"
     group: "{{ create_user_result.group }}"
-  when: authorized_keys is defined and (create_user_result is defined and create_user_result.changed)
+  when: authorized_keys is defined # and (create_user_result is defined and create_user_result.changed)
 
 # For now, this just adds unrestricted sudo access.
 # TODO: Support sudo restrictions like user/command aliases, etc.

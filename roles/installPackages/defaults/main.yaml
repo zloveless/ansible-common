@@ -4,6 +4,7 @@ packages_update_available: no
 
 packages_apt_latest: []
 packages_apt_present: []
+packages_apt_gone: []
 
 packages_yum_latest: []
 packages_yum_present: []

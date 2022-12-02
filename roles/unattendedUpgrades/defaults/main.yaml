@@ -1,0 +1,3 @@
+unattended_mailto_notify: "root@localhost"
+unattended_mail_on_error: yes
+unattended_updates_blacklist: []

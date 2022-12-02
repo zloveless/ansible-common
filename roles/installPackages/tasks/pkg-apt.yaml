@@ -19,3 +19,10 @@
     upgrade: yes
     update_cache: yes
   when: ansible_pkg_mgr == 'apt' and packages_update_available|bool == true
+
+- name: remove packages (apt)
+  ansible.builtin.apt:
+    name: "{{ packages_apt_gone|default([]) }}"
+    state: absent
+  when: ansible_pkg_mgr == 'apt' and packages_apt_gone|length > 0
+#EOF

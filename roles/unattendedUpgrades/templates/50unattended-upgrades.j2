@@ -1,0 +1,18 @@
+Unattended-Upgrade::Automatic-Reboot "false";
+
+{% if unattended_mailto_notify %}
+Unattended-Upgrade::Mail "{{ unattended_mailto_notify }}";
+{% if unattended_mail_on_error %}
+Unattended-Upgrade::MailOnlyOnError "true";
+{% endif %}
+{% endif %}
+
+Unattended-Upgrade::Origins-Pattern {
+        "origin=Debian,codename=${distro_codename},label=Debian-Security";
+};
+
+Unattended-Upgrade::Package-Blacklist{
+{% for package in unattended_updates_blacklist %}
+      "{{package}}";
+{% endfor %}
+}

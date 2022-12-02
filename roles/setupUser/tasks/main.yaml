@@ -26,10 +26,19 @@
     mode: 0600
     owner: "{{ create_user_result.name }}"
     group: "{{ create_user_result.group }}"
-  when: authorized_keys is defined # and (create_user_result is defined and create_user_result.changed)
+  when: authorized_keys is defined and create_user_result is defined
 
-# For now, this just adds unrestricted sudo access.
+- name: configure authorized_keys for user
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/authorized_keys.j2"
+    dest: "{{ create_user_result.home }}/.ssh/authorized_keys"
+    mode: 0600
+    owner: "{{ create_user_result.name }}"
+    group: "{{ create_user_result.group }}"
+  when: authorized_keys is defined and username|default('root') == 'root'
+
 # TODO: Support sudo restrictions like user/command aliases, etc.
+# For now, this just adds unrestricted sudo access.
 - name: configure sudoers access for user
   ansible.builtin.template:
     src: "{{ role_path }}/templates/sudoers.j2"

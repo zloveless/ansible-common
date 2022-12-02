@@ -33,8 +33,8 @@
     src: "{{ role_path }}/templates/authorized_keys.j2"
     dest: "/root/.ssh/authorized_keys"
     mode: 0600
-    owner: "{{ create_user_result.name }}"
-    group: "{{ create_user_result.group }}"
+    owner: "root"
+    group: "root"
   when: authorized_keys is defined and username|default('root') == 'root'
 
 # TODO: Support sudo restrictions like user/command aliases, etc.

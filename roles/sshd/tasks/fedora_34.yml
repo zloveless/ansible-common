@@ -1,0 +1,17 @@
+---
+- name: get openssh version (Fedora)
+  ansible.builtin.shell: 'yum info openssh-server | grep "^Version" | sed -re "s/^.*:\s*([0-9]\.[0-9]+).*/\1/"'
+  register: openssh_version_result
+
+- name: set openssh_version fact
+  ansible.builtin.set_fact:
+    openssh_version: "{{ openssh_version_result.stdout }}"
+  when: openssh_version_result.rc == 0
+
+#- name: copy 50-redhat.conf 
+#  ansible.builtin.template:
+#    src: "50-redhat.conf.j2"
+#    dest: "/etc/ssh/sshd_config.d/50-redhat.conf"
+#    owner: root
+#    group: root
+#    mode: 0700

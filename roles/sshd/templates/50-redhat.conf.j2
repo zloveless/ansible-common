@@ -1,0 +1,23 @@
+#{{ ansible_managed }}
+Include /etc/crypto-policies/back-ends/opensshserver.config
+
+SyslogFacility AUTHPRIV
+
+ChallengeResponseAuthentication {{ sshd_enable_challenge_response_auth }}
+
+GSSAPIAuthentication {{ sshd_enable_gssapi_auth }}
+GSSAPICleanupCredentials no
+
+UsePAM yes
+
+X11Forwarding yes
+
+# It is recommended to use pam_motd in /etc/pam.d/sshd instead of PrintMotd,
+# as it is more configurable and versatile than the built-in version.
+PrintMotd no
+
+# Accept locale-related environment variables
+AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+AcceptEnv XMODIFIERS

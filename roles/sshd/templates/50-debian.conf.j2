@@ -1,0 +1,7 @@
+#{{ ansible_managed }}
+PasswordAuthentication {{ sshd_enable_password_auth | string }}
+UseDNS {{ sshd_enable_usedns | string }}
+PermitEmptyPasswords {{ sshd_enable_empty_passwords | string }}
+ChallengeResponseAuthentication {{ sshd_enable_challenge_response_auth | string }}
+GSSAPIAuthentication {{ sshd_enable_gssapi_auth | string }}
+X11Forwarding {{ sshd_enable_x11_forwarding | string }}

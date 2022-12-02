@@ -1,0 +1,22 @@
+---
+- name: setup selinux for alternate SSH port
+  community.general.seport:
+    ports: "{{ sshd_configured_port }}"
+    proto: "tcp"
+    setype: "ssh_port_t"
+    state: "present"
+  when: ansible_selinux.status == "enabled"
+
+- name: configure firewall for new ssh port
+  ansible.posix.firewalld:
+    state: enabled
+    port: "{{ sshd_configured_port }}/tcp"
+    zone: public
+
+- name: configure firewall rule as permanent
+  ansible.posix.firewalld:
+    state: enabled
+    port: "{{ sshd_configured_port }}/tcp"
+    permanent: yes
+  notify: reload firewalld
+#EOF

@@ -1,0 +1,68 @@
+---
+- name: get openssh version
+  ansible.builtin.shell: 'dpkg -s openssh-server | grep "^Version" | sed -re "s/^.*:([0-9]+\.[0-9]+).*/\1/"'
+  register: openssh_version_result
+
+- name: set openssh_version fact
+  ansible.builtin.set_fact:
+    openssh_version: "{{ openssh_version_result.stdout }}"
+  when: openssh_version_result.rc == 0
+
+# TODO: Refactor this out into something more distro-agnostic
+- name: remove some SSH configurations to be more secure.
+  lineinfile:
+    path: "/etc/ssh/sshd_config"
+    regexp: "{{ item.regexp }}"
+    state: absent
+  with_items:
+#    - regexp: "^HostKey"
+    - regexp: "^KeyRegenerationInterval"
+    - regexp: "^ServerKeyBits"
+    - regexp: "^RSAAuthentication"
+    - regexp: "^RhostsRSAAuthentication"
+
+- name: update SSH configuration to be more secure. OpenSSH >= 6.5
+  lineinfile:
+    path: "/etc/ssh/sshd_config"
+    regexp: "{{ item.regexp }}"
+    insertbefore: "^Match User.*$"
+    firstmatch: yes
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: "^HostKey /etc/ssh/ssh_host_ed25519_key"
+      line: "HostKey /etc/ssh/ssh_host_ed25519_key"
+    - regexp: "^HostKey /etc/ssh/ssh_host_rsa_key"
+      line: "HostKey /etc/ssh/ssh_host_rsa_key"
+    - regexp: "^KexAlgorithms"
+      line: "KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256"
+    - regexp: "^Ciphers"
+      line: "Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"
+    - regexp: "^MACs"
+      line: "MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256"
+  when: openssh_version is version('6.5', '>=') and openssh_version is version('7.3', '<') 
+  notify: restart sshd
+
+- name: update SSH configuration to be more secure. OpenSSH >= 7.3
+  lineinfile:
+    path: "/etc/ssh/sshd_config"
+    regexp: "{{ item.regexp }}"
+    insertbefore: "^Match User.*$"
+    firstmatch: yes
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: "^HostKey /etc/ssh/ssh_host_ed25519_key"
+      line: "HostKey /etc/ssh/ssh_host_ed25519_key"
+    - regexp: "^HostKey /etc/ssh/ssh_host_rsa_key"
+      line: "HostKey /etc/ssh/ssh_host_rsa_key"
+    - regexp: "^HostKeyAlgorithms"
+      line: "HostKeyAlgorithms ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa"
+    - regexp: "^KexAlgorithms"
+      line: "KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512"
+    - regexp: "^Ciphers"
+      line: "Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"
+    - regexp: "^MACs"
+      line: "MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256"
+  when: openssh_version is version('7.3', '>=') 
+  notify: restart sshd

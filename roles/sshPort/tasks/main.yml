@@ -1,0 +1,79 @@
+---
+- name: set configured port fact
+  ansible.builtin.set_fact:
+    sshd_configured_port: "{{ ansible_port }}"
+
+- name: check availability of default ssh port on host
+  ansible.builtin.wait_for:
+    port: "22"
+    state: "started"
+    host: "{{ ansible_host | default(inventory_hostname) }}"
+    connect_timeout: "5"
+    timeout: "10"
+  delegate_to: "localhost"
+  ignore_errors: yes
+  register: default_ssh
+
+- name: set inventory ansible_port to default
+  ansible.builtin.set_fact:
+    ansible_port: "22"
+  when: default_ssh is defined and not default_ssh.failed
+  register: ssh_port_set
+
+- name: check availability of the provided ssh port on host
+  ansible.builtin.wait_for:
+    port: "{{ ansible_port }}"
+    state: "started"
+    host: "{{ ansible_host | default(inventory_hostname) }}"
+    connect_timeout: "5"
+    timeout: "10"
+  delegate_to: "localhost"
+  ignore_errors: yes
+  register: configured_ssh
+
+- name: ssh port is configured properly
+  ansible.builtin.debug:
+    msg: "SSH port is configured properly"
+  when: configured_ssh is defined and
+        not configured_ssh.failed
+  register: ssh_port_set
+
+- name: fail if SSH port was not auto-detected (unknown)
+  ansible.builtin.fail:
+    msg: "The SSH port is neither 22 or {{ sshd_configured_port }}."
+  when: ssh_port_set is undefined
+
+- name: Confirm host connection works
+  ansible.builtin.ping:
+
+- name: setup alternate SSH port
+  ansible.builtin.lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^Port"
+    insertbefore: "^#Port"
+    line: "Port {{ sshd_configured_port }}"
+  notify: "restart sshd"
+
+- name: gather facts for future tasks
+  ansible.builtin.setup:
+
+# This is for configuring SELinux ports and firewalld on the RedHat OS line (Fedora) mostly.
+- name: include specific configuration based on distribution and operating system
+  ansible.builtin.include_tasks: "{{ lookup('first_found', params) }}"
+  ignore_errors: yes
+  vars:
+    params:
+      files:
+        - "{{ ansible_distribution | lower }}_{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_distribution | lower }}_{{ ansible_distribution_major_version[:1] ~ 'x' }}.yml"
+        - "{{ ansible_os_family | lower }}_{{ ansible_distribution_major_version }}.yml"
+      paths:
+        - "tasks"
+
+- name: ensure sshd is restarted
+  ansible.builtin.meta: flush_handlers
+
+- name: set ansible_port to the configured ssh port
+  ansible.builtin.set_fact:
+    ansible_port: "{{ sshd_configured_port }}"
+#EOF

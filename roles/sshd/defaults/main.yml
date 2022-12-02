@@ -1,0 +1,8 @@
+sshd_enable_root_login: "without-password"
+sshd_enable_password_auth: "no"
+sshd_enable_empty_passwords: "no"
+sshd_enable_usedns: "no"
+sshd_enable_challenge_response_auth: "no"
+sshd_enable_x11_forwarding: "no"
+
+sshd_enable_gssapi_auth: "no"

@@ -1,0 +1,93 @@
+---
+- name: include OS-specific tasks designed to get the ssh version
+  ansible.builtin.include_tasks: "{{ lookup('first_found', params) }}"
+  ignore_errors: yes
+  vars:
+    params:
+      files:
+        - "{{ ansible_distribution | lower }}_{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_distribution | lower }}_{{ ansible_distribution_major_version[:1] ~ 'x' }}.yml"
+        - "{{ ansible_os_family | lower }}.yml"
+      paths:
+        - "tasks"
+
+- name: create /etc/ssh/sshd_config.d/ directory
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d/
+    owner: root
+    group: root
+    mode: 0700
+    state: directory
+  when: openssh_version is version('8.6', '>=')
+
+# This may or may not be needed. leaving it disabled for now.
+# This just ensures that there's no overrides occuring by commenting out all the options (except Port & Include) in sshd_config
+#- name: comment out all configuration entries (debian only)
+#  ansible.builtin.replace:
+#    path: /etc/ssh/sshd_config
+#    regexp: '^(?!#)((?!Port|Include).*)'
+#    replace: '#\1'
+#    backup: yes
+#  when: ansible_os_family == 'Debian'
+
+- name: configure sshd to include additional configs (sshd >= 8.6)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^Include /etc/ssh.*"
+    insertbefore: BOF
+    line: "Include /etc/ssh/sshd_config.d/*.conf"
+    validate: /usr/sbin/sshd -T -f %s
+  when: openssh_version is version('8.6', '>=')
+
+- name: unconfigure sshd to not include additional configs (sshd < 8.6)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^Include"
+    state: absent
+  when: openssh_version is version('8.6', '<')
+
+- name: mark sshd_config as managed by ansible
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    insertbefore: BOF
+    line: "# {{ ansible_managed }}"
+
+- name: copy over sshd configurations
+  ansible.builtin.template:
+    src: "{{ item.template }}"
+    dest: "/etc/ssh/sshd_config.d/{{ item.file }}"
+    owner: root
+    group: root
+    mode: 0700
+  when: openssh_version is version('8.6', '>=') and item.condition | default(True)
+  loop_control:
+    label: "{{ item.file }}"
+  with_items:
+    - template: "01-permitrootlogin.conf.j2"
+      file: "01-permitrootlogin.conf"
+    - template: "50-redhat.conf.j2"
+      file: "50-redhat.conf"
+      condition: "ansible_distribution == 'Fedora' or ansible_os_family == 'RedHat'"
+    - template: "50-debian.conf.j2"
+      file: "50-debian.conf"
+      condition: "ansible_os_family == 'Debian'"
+
+- name: configure root login setting (sshd < 8.6)
+  ansible.builtin.lineinfile:
+    state: present
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: "PermitRootLogin {{ sshd_enable_root_login | string }}"
+  when: openssh_version is version('8.6', '<')
+
+# TODO: Revisit this debian (buster) gets a modern sshd version. (8.x is on testing branch as of 2021-03. see: https://tracker.debian.org/pkg/openssh)
+- name: configure additional sshd_config properties
+  ansible.builtin.blockinfile:
+    state: present
+    path: /etc/ssh/sshd_config
+    block: "{{ lookup('template', '50-debian.conf.j2') }}"
+    insertafter: '^Port.+'
+    backup: yes
+    validate: /usr/sbin/sshd -T -f %s
+  when: openssh_version is version('8.6', '<') and ansible_os_family == 'Debian'
+#EOF

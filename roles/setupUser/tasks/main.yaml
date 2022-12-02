@@ -31,7 +31,7 @@
 - name: configure authorized_keys for user
   ansible.builtin.template:
     src: "{{ role_path }}/templates/authorized_keys.j2"
-    dest: "{{ create_user_result.home }}/.ssh/authorized_keys"
+    dest: "/root/.ssh/authorized_keys"
     mode: 0600
     owner: "{{ create_user_result.name }}"
     group: "{{ create_user_result.group }}"

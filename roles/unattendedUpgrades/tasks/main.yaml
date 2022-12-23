@@ -2,7 +2,7 @@
 - name: check if debian family
   ansible.builtin.fail:
     msg: "This role is only supported on the Debian family of distributions."
-  when: ansible_os_family|lower == 'debian'
+  when: ansible_os_family|lower != 'debian'
 
 - name:
   ansible.builtin.apt:

@@ -11,3 +11,9 @@ packages_yum_present: []
 
 packages_dnf_latest: []
 packages_dnf_present: []
+
+# NEW!
+packages_legacy: no
+packages_latest: []
+packages_present: []
+packages_absent: []

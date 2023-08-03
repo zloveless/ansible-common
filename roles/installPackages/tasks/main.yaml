@@ -4,4 +4,23 @@
     params:
       files:
         - "pkg-{{ ansible_pkg_mgr }}.yaml"
+  when: packages_legacy
+
+- name: install the latest versions of specified packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: latest
+  with_items: "{{ packages_latest }}"
+
+- name: ensure the specified packages are present, even if not the latest version
+    ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ packages_present }}"
+
+- name: remove the specified packages altogether
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ packages_absent }}"
 #EOF

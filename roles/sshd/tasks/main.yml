@@ -59,7 +59,7 @@
     owner: root
     group: root
     mode: 0700
-  when: openssh_version is version('8.6', '>=') and item.condition | default(True)
+  when: openssh_version is version('8.6', '>=') and item.condition | default(False)
   loop_control:
     label: "{{ item.file }}"
   with_items:

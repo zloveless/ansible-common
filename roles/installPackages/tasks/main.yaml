@@ -14,7 +14,7 @@
   when: not packages_legacy
 
 - name: ensure the specified packages are present, even if not the latest version
-    ansible.builtin.package:
+  ansible.builtin.package:
     name: "{{ item }}"
     state: present
   with_items: "{{ packages_present }}"

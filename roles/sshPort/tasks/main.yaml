@@ -17,8 +17,6 @@
     - "{{ sshd_configured_port }}"
     - "{{ sshport_default }}"
 
-- ansible.builtin.debug: var=configured_ssh.results
-
 - block:
     - name: segue to our sponsor
       ansible.builtin.debug:

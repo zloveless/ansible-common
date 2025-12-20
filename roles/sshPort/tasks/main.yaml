@@ -22,7 +22,7 @@
       ansible.builtin.debug:
         msg: "Exiting role due to {{ inventory_hostname }} already having the correct ssh port configured."
     - name: is the desired port is already reachable
-      ansible.builtin.meta: end_role
+      ansible.builtin.meta: end_host
   when: not configured_ssh.results[0].failed and configured_ssh.results[0].item == ansible_port
 
 - name: fail if the ssh port is unreachable or unknown

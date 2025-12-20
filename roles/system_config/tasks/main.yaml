@@ -1,0 +1,25 @@
+---
+- name: Set timezone
+  become: true
+  community.general.timezone:
+    name: "{{ sysconf_timezone }}"
+  when: sysconf_timezone is defined and sysconf_timezone != ""
+
+- name: Ensure sysctl parameters are present
+  become: true
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: true
+    sysctl_file: /etc/sysctl.d/99-sysconf.conf
+  loop: "{{ sysconf_sysctl_add }}"
+
+- name: Ensure sysctl parameters are absent
+  become: true
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: absent
+    sysctl_file: /etc/sysctl.d/99-sysconf.conf
+  loop: "{{ sysconf_sysctl_remove }}"

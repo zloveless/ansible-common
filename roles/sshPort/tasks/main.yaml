@@ -17,13 +17,13 @@
     - "{{ sshd_configured_port }}"
     - "{{ sshport_default }}"
 
-- block:
+- when: not configured_ssh.results[0].failed and configured_ssh.results[0].item == ansible_port
+  block:
     - name: segue to our sponsor
       ansible.builtin.debug:
         msg: "Exiting role due to {{ inventory_hostname }} already having the correct ssh port configured."
     - name: is the desired port is already reachable
       ansible.builtin.meta: end_host
-  when: not configured_ssh.results[0].failed and configured_ssh.results[0].item == ansible_port
 
 - name: fail if the ssh port is unreachable or unknown
   ansible.builtin.fail:
@@ -46,34 +46,33 @@
   ansible.builtin.set_fact:
     openssh_version: "{{ (ansible_facts.packages['openssh-server'][0].version) | ansible.builtin.regex_replace('^.*:([0-9]+\\.[0-9]+).*', '\\1') }}"
 
-- name: include OS-specific tasks
-  ansible.builtin.include_tasks: "{{ item }}"
-  with_first_found:
-    - "{{ ansible_distribution | lower }}_{{ ansible_distribution_major_version }}.yaml"
-    - "{{ ansible_distribution | lower }}.yaml"
-    - "{{ ansible_os_family }}.yaml"
-  ignore_errors: yes
-
-- name: write port change to sshd configuration file
-  ansible.builtin.lineinfile:
-    dest: "/etc/ssh/sshd_config"
-    regexp: "^Port"
-    insertbefore: "^#Port"
-    line: "Port {{ sshd_configured_port }}"
-  notify: "restart sshd"
-  when: openssh_version is version('7.3', '<')
-
-- name: install port change to /etc/ssh/sshd_config.d/ configuration. 
-  ansible.builtin.template:
-    src: "{{ role_path }}/templates/10-sshport.conf.j2"
-    dest: "/etc/ssh/sshd_config.d/10-sshport.conf"
-    mode: "0600"
-  notify: "restart sshd"
-  when: openssh_version is version('7.3', '>=')
-
-- name: ensure sshd is restarted
-  ansible.builtin.meta: flush_handlers
-
+- become: yes
+  block:
+    - name: include OS-specific tasks
+      ansible.builtin.include_tasks: "{{ item }}"
+      with_first_found:
+        - "{{ ansible_distribution | lower }}_{{ ansible_distribution_major_version }}.yaml"
+        - "{{ ansible_distribution | lower }}.yaml"
+        - "{{ ansible_os_family }}.yaml"
+      ignore_errors: yes
+    - name: write port change to sshd configuration file
+      ansible.builtin.lineinfile:
+        dest: "/etc/ssh/sshd_config"
+        regexp: "^Port"
+        insertbefore: "^#Port"
+        line: "Port {{ sshd_configured_port }}"
+      notify: "restart sshd"
+      when: openssh_version is version('7.3', '<')
+    - name: install port change to /etc/ssh/sshd_config.d/ configuration. 
+      ansible.builtin.template:
+        src: "{{ role_path }}/templates/10-sshport.conf.j2"
+        dest: "/etc/ssh/sshd_config.d/10-sshport.conf"
+        mode: "0600"
+      notify: "restart sshd"
+      when: openssh_version is version('7.3', '>=')
+    - name: ensure sshd is restarted
+      ansible.builtin.meta: flush_handlers
+  
 - name: set ansible_port to the configured ssh port
   ansible.builtin.set_fact:
     ansible_port: "{{ sshd_configured_port }}"

@@ -1,0 +1,20 @@
+---
+- name: check if docker is installed
+  ansible.builtin.command: docker -v
+  register: docker_check
+  ignore_errors: yes
+
+- name: fail if docker is not installed
+  ansible.builtin.fail:
+    msg: "Docker and Docker Compose need to be installed before using this role."
+  when: docker_check.rc != 0
+
+- name: set project_path fact
+  ansible.builtin.set_fact:
+    project_path: "{{ compose_project_base_path }}/{{ project_name }}"
+
+- include_tasks: install.yaml
+  when: state | default('present') == 'present'
+
+- include_tasks: uninstall.yaml
+  when: state | default('present') == 'absent'

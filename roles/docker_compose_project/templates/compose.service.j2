@@ -1,0 +1,25 @@
+[Unit]
+Description=Manages the {{ project_name }} docker-compose systemd services
+
+[Service]
+Type=oneshot
+WorkingDirectory={{ project_path }}
+SyslogIdentifier={{ project_name }}
+RemainAfterExit=yes
+
+{% if docker_registry_url != "" or docker_username != "" %}
+Environment="DOCKER_CONFIG={{ project_path }}/.docker/"
+{% endif %}
+
+{% if use_docker_compose_plugin|bool %}
+ExecStartPre=-/usr/bin/docker compose pull --quiet --ignore-pull-failures
+ExecStart=/usr/bin/docker compose up -d --remove-orphans
+
+ExecStop=/usr/bin/docker compose down
+
+ExecReload=/usr/bin/docker compose pull --quiet --ignore-pull-failures
+ExecReload=/usr/bin/docker compose up -d --remove-orphans
+{% endif %}
+
+[Install]
+WantedBy=multi-user.target

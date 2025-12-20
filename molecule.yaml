@@ -1,0 +1,13 @@
+---
+dependency:
+  name: galaxy
+  options:
+    requirements-file: requirements.yaml
+
+platforms:
+  - name: molecule-ubuntu
+    image: ubuntu:24.04
+  - name: molecule-debian-bookworm
+    image: debian:bookworm
+  - name: molecule-fedora
+    image: fedora:42

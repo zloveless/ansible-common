@@ -15,7 +15,7 @@
   register: configured_ssh
   loop:
     - "{{ sshd_configured_port }}"
-    - "22"
+    - "{{ sshport_default }}"
 
 - ansible.builtin.debug: var=configured_ssh.results
 

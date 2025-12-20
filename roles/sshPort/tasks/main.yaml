@@ -17,7 +17,7 @@
     - "{{ sshd_configured_port }}"
     - "22"
 
-- ansible.builtin.block:
+- block:
     - name: segue to our sponsor
       ansible.builtin.debug:
         msg: "Exiting role due to {{ inventory_hostname }} already having the correct ssh port configured."

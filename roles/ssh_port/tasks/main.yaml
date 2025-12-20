@@ -7,8 +7,10 @@
   ansible.builtin.wait_for:
     port: "{{ item }}"
     state: "started"
-    host: "{{ ansible_host | default(inventory_hostname) }}"
+    host: "{{ ansible_ssh_host | default(ansible_host) | default(inventory_hostname) }}"
+    search_regex: OpenSSH
     connect_timeout: "5"
+    delay: "10"
     timeout: "10"
   delegate_to: "localhost"
   ignore_errors: yes

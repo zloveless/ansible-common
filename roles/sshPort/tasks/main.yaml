@@ -17,6 +17,8 @@
     - "{{ sshd_configured_port }}"
     - "22"
 
+- ansible.builtin.debug: var=configured_ssh.results
+
 - block:
     - name: segue to our sponsor
       ansible.builtin.debug:

@@ -1,0 +1,3 @@
+---
+hostname_use_fqdn_suffix: no
+hostname_fqdn_suffix: ".local"

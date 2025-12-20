@@ -1,0 +1,38 @@
+---
+- name: check for localhost in inventory name
+  ansible.builtin.fail:
+    msg: "Will not set hostname to localhost."
+  when: inventory_hostname == "localhost"
+
+- name: gather facts
+  ansible.builtin.setup:
+
+- name: set configured_hostname to inventory_hostname
+  ansible.builtin.set_fact:
+    configured_hostname: "{{ inventory_hostname }}"
+  when: hostname_use_fqdn_suffix | bool == false
+
+- name: set configured hostname using fqdn suffix
+  ansible.builtin.set_fact:
+    configured_hostname: "{{ inventory_hostname + hostname_fqdn_suffix }}"
+  when: hostname_use_fqdn_suffix | bool == true
+
+- name: configure hostname on server to the configured_hostname
+  ansible.builtin.hostname:
+    name: "{{ configured_hostname }}"
+  when: ansible_virtualization_type != 'openvz'
+
+- name: add entries to /etc/hosts
+  ansible.builtin.lineinfile:
+    dest: /etc/hosts
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+      # Maintenance note: This regexp line fails syntax check if you use double-quotes. (2021-05-18, zloveless)
+    - regexp: '^127\.0\.0\.1[\s?\t]+localhost.*'
+      line: "127.0.0.1 localhost local"
+    - regexp: "^{{ ansible_default_ipv4.address }}"
+      line: "{{ ansible_default_ipv4.address }} {{ configured_hostname }} {{ inventory_hostname }} {{ inventory_hostname_short }}"
+  when: ansible_virtualization_type != 'openvz'
+#EOF

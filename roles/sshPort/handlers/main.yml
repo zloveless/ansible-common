@@ -3,8 +3,10 @@
   ansible.builtin.service:
     name: sshd
     state: restarted
+  become: yes
 
 - name: reload firewalld
   ansible.builtin.service:
     name: firewalld
     state: reloaded
+  become: yes

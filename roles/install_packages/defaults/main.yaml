@@ -1,6 +1,6 @@
 ---
 # Gets or sets a value indicating whether to update all packages.
-packages_update_available: no
+packages_update_available: false
 
 packages_apt_latest: []
 packages_apt_present: []
@@ -13,7 +13,7 @@ packages_dnf_latest: []
 packages_dnf_present: []
 
 # NEW!
-packages_legacy: no
+packages_legacy: false
 packages_latest: []
 packages_present: []
 packages_absent: []

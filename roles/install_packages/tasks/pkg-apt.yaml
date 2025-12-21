@@ -1,28 +1,27 @@
 ---
 # Ubuntu/Debian
-- name: install packages - ensure latest (apt)
+- name: Install packages - ensure latest (apt)
   ansible.builtin.apt:
     name: "{{ packages_apt_latest }}"
-    update_cache: yes
+    update_cache: true
     state: latest
   when: ansible_pkg_mgr == 'apt' and packages_apt_latest|length > 0
 
-- name: install packages - ensure present (apt)
+- name: Install packages - ensure present (apt)
   ansible.builtin.apt:
     name: "{{ packages_apt_present }}"
-    update_cache: yes
+    update_cache: true
     state: present
   when: ansible_pkg_mgr == 'apt' and packages_apt_present|length > 0
 
-- name: update all packages (apt)
+- name: Update all packages (apt)
   ansible.builtin.apt:
-    upgrade: yes
-    update_cache: yes
-  when: ansible_pkg_mgr == 'apt' and packages_update_available|bool == true
+    upgrade: true
+    update_cache: true
+  when: ansible_pkg_mgr == 'apt' and packages_update_available|bool
 
-- name: remove packages (apt)
+- name: Remove packages (apt)
   ansible.builtin.apt:
-    name: "{{ packages_apt_gone|default([]) }}"
+    name: "{{ packages_apt_gone | default([]) }}"
     state: absent
   when: ansible_pkg_mgr == 'apt' and packages_apt_gone|length > 0
-#EOF

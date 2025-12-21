@@ -1,29 +1,29 @@
 ---
-- include_tasks: "{{ lookup('first_found', params) }}"
+- name: Include package manager specific tasks
+  ansible.builtin.include_tasks: "{{ lookup('first_found', params) }}"
   vars:
     params:
       files:
         - "pkg-{{ ansible_pkg_mgr }}.yaml"
   when: packages_legacy
 
-- name: install the latest versions of specified packages
+- name: Install the latest versions of specified packages
   ansible.builtin.package:
     name: "{{ item }}"
     state: latest
   with_items: "{{ packages_latest }}"
   when: not packages_legacy
 
-- name: ensure the specified packages are present, even if not the latest version
+- name: Ensure the specified packages are present, even if not the latest version
   ansible.builtin.package:
     name: "{{ item }}"
     state: present
   with_items: "{{ packages_present }}"
   when: not packages_legacy
 
-- name: remove the specified packages altogether
+- name: Remove the specified packages altogether
   ansible.builtin.package:
     name: "{{ item }}"
     state: absent
   with_items: "{{ packages_absent }}"
   when: not packages_legacy
-#EOF

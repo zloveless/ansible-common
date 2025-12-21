@@ -1,9 +1,9 @@
 ---
-- name: set configured port fact
+- name: Set configured port fact
   ansible.builtin.set_fact:
     sshd_configured_port: "{{ ansible_port }}"
 
-- name: check availability of the provided ssh port on host
+- name: Check availability of the provided ssh port on host
   ansible.builtin.wait_for:
     port: "{{ item }}"
     state: "started"
@@ -13,69 +13,74 @@
     delay: "10"
     timeout: "10"
   delegate_to: "localhost"
-  ignore_errors: yes
+  ignore_errors: true
   register: configured_ssh
   loop:
     - "{{ sshd_configured_port }}"
     - "{{ sshport_default }}"
 
-- when: not configured_ssh.results[0].failed and configured_ssh.results[0].item == ansible_port
+- name: Check if the desired port is already configured
+  when: not configured_ssh.results[0].failed and configured_ssh.results[0].item == ansible_port
   block:
-    - name: segue to our sponsor
+    - name: Segue to our sponsor
       ansible.builtin.debug:
         msg: "Exiting role due to {{ inventory_hostname }} already having the correct ssh port configured."
-    - name: is the desired port is already reachable
+
+    - name: Is the desired port is already reachable
       ansible.builtin.meta: end_host
 
-- name: fail if the ssh port is unreachable or unknown
+- name: Fail if the ssh port is unreachable or unknown
   ansible.builtin.fail:
     msg: "The configured ssh port and default ssh port are unreachable. Is {{ inventory_hostname }} behind a NAT or Firewall?"
   when: configured_ssh.results[0].failed and configured_ssh.results[1].failed
 
-- name: reset ansible_port to default value if preferred is not configured already
+- name: Reset ansible_port to default value if preferred is not configured already
   ansible.builtin.set_fact:
     ansible_port: "{{ configured_ssh.results[1].item }}" # fancy way of saying 22. (see order from loop in check availability task above)
   when: configured_ssh.results[0].failed and not configured_ssh.results[1].failed
 
-- name: confirm host connection works
+- name: Confirm host connection works
   ansible.builtin.ping:
 
-- name: get openssh-server version from remote
+- name: Get openssh-server version from remote
   ansible.builtin.package_facts:
     strategy: all
 
-- name: update openssh_version as a fact
+- name: Update openssh_version as a fact
   ansible.builtin.set_fact:
     openssh_version: "{{ (ansible_facts.packages['openssh-server'][0].version) | ansible.builtin.regex_replace('^.*:([0-9]+\\.[0-9]+).*', '\\1') }}"
 
-- become: yes
+- name: Configure the SSH Port
+  become: true
   block:
-    - name: include OS-specific tasks
+    - name: Include OS-specific tasks
       ansible.builtin.include_tasks: "{{ item }}"
       with_first_found:
         - "{{ ansible_distribution | lower }}_{{ ansible_distribution_major_version }}.yaml"
         - "{{ ansible_distribution | lower }}.yaml"
         - "{{ ansible_os_family }}.yaml"
-      ignore_errors: yes
-    - name: write port change to sshd configuration file
+      ignore_errors: true
+
+    - name: Write port change to sshd configuration file
       ansible.builtin.lineinfile:
         dest: "/etc/ssh/sshd_config"
         regexp: "^Port"
         insertbefore: "^#Port"
         line: "Port {{ sshd_configured_port }}"
-      notify: "restart sshd"
+      notify: "Restart sshd"
       when: openssh_version is version('7.3', '<')
-    - name: install port change to /etc/ssh/sshd_config.d/ configuration. 
+
+    - name: Install port change to /etc/ssh/sshd_config.d/ configuration.
       ansible.builtin.template:
         src: "{{ role_path }}/templates/10-sshport.conf.j2"
         dest: "/etc/ssh/sshd_config.d/10-sshport.conf"
         mode: "0600"
-      notify: "restart sshd"
+      notify: "Restart sshd"
       when: openssh_version is version('7.3', '>=')
 
-- name: ensure sshd is restarted
+- name: Ensure sshd is restarted
   ansible.builtin.meta: flush_handlers
-  
-- name: set ansible_port to the configured ssh port
+
+- name: Set ansible_port to the configured ssh port
   ansible.builtin.set_fact:
     ansible_port: "{{ sshd_configured_port }}"

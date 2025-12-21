@@ -1,13 +1,13 @@
 ---
-# disclaimer: docker does not support multiple registries, so projects cannot mix registry credentials within their service declarations.
-- name: create .docker folder inside project path
+# note: docker does not support multiple registries, so projects cannot mix registry credentials within their service declarations.
+- name: Create .docker folder inside project path
   ansible.builtin.file:
     path: "{{ project_path }}/.docker/"
     state: directory
-    recurse: yes
+    recurse: true
   when: docker_registry_url != "" or docker_username != ""
 
-- name: log in to the container registry
+- name: Log in to the container registry
   community.docker.docker_login:
     username: "{{ docker_username }}"
     password: "{{ docker_password }}"
@@ -15,32 +15,35 @@
     config_path: "{{ project_path }}/.docker/config.json"
   when: docker_registry_url != "" or docker_username != ""
 
-- name: create project directory
+- name: Create project directory
   ansible.builtin.file:
     path: "{{ project_path }}"
     state: directory
-    recurse: yes
+    recurse: true
 
-- name: copy docker-compose.yaml to remote
+- name: Copy docker-compose.yaml to remote
   ansible.builtin.copy:
     dest: "{{ project_path }}/docker-compose.yaml"
-    content: "{{ compose_spec | to_nice_yaml | mandatory }}"
+    content: "{{ compose_spec | mandatory | to_nice_yaml }}"
+    mode: "0600"
 
-- name: mark docker-compose.yaml as managed by ansible
+- name: Mark docker-compose.yaml as managed by ansible
   ansible.builtin.lineinfile:
     line: "#{{ ansible_managed }}"
     insertbefore: BOF
     path: "{{ project_path }}/docker-compose.yaml"
 
-- name: copy over systemd services
+- name: Copy over systemd services
   ansible.builtin.template:
     src: "{{ role_path }}/templates/compose.service.j2"
     dest: "/etc/systemd/system/{{ service_name }}.service"
+    mode: "0644"
 
-- name: copy over systemd services and timers
+- name: Copy over systemd services and timers
   ansible.builtin.template:
     src: "{{ item.template }}"
     dest: "/etc/systemd/system/{{ item.unit_file }}"
+    mode: "0644"
   with_items:
     - template: "{{ role_path }}/templates/reload.service.j2"
       unit_file: "{{ service_name }}-cron.service"
@@ -48,34 +51,34 @@
       unit_file: "{{ service_name }}-cron.timer"
   when: compose_service_autoupdate|default(True)|bool
 
-- name: install docker-compose systemd service for the project
+- name: Install docker-compose systemd service for the project
   ansible.builtin.systemd:
     name: "{{ item }}"
-    state: "{{ compose_service_autostart|bool | ternary('started', 'stopped', omit) }}"
-    enabled: yes
-    daemon_reload: yes
-    masked: no
+    state: "{{ compose_service_autostart | bool | ternary('started', 'stopped', omit) }}"
+    enabled: true
+    daemon_reload: true
+    masked: false
   with_items:
     - "{{ service_name }}.service"
 
-- name: install docker-compose cron systemd service for the project
+- name: Install docker-compose cron systemd service for the project
   ansible.builtin.systemd:
     name: "{{ item }}"
-    enabled: yes
-    daemon_reload: yes
-    masked: no
+    enabled: true
+    daemon_reload: true
+    masked: false
   with_items:
     - "{{ service_name }}-cron.service"
     - "{{ service_name }}-cron.timer"
   when: compose_service_autoupdate|default(True)|bool
 
-- name: start project service
+- name: Start project service
   ansible.builtin.systemd:
     name: "{{ service_name }}.service"
     state: restarted
   when: compose_service_autostart|bool
 
-- name: ensure service is not started (auto-start disabled)
+- name: Ensure service is not started (auto-start disabled)
   ansible.builtin.systemd:
     name: "{{ service_name }}.service"
     state: stopped

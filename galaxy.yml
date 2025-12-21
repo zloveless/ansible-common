@@ -1,12 +1,20 @@
-namespace: "zloveless"
-name: "common"
-version: "2.0.0"
-readme: "README.md"
-license_file: "LICENSE"
-repository: "https://github.com/zloveless/ansible-common"
+namespace: zloveless
+name: common
+description: Handy Ansible roles for common Linux system setup and configuration tasks.
+version: 2.0.0
+readme: README.md
+license_file: LICENSE
+repository: https://github.com/zloveless/ansible-common
 authors:
-  - "Zack Loveless (https://zloveless.com)"
+  - Zack Loveless (https://zloveless.com)
 dependencies:
   "community.general": ">=3.0.0"
   "community.crypto": ">=1.9.6"
   "ansible.posix": ">=1.2.0"
+build_ignore: []
+tags:
+  - linux
+  - system
+  - configuration
+  - sysctl
+  - ssh

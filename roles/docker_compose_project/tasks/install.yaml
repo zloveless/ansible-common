@@ -62,7 +62,7 @@
     - "{{ service_name }}.service"
 
 - name: Install docker-compose cron systemd service for the project
-  ansible.builtin.systemd:
+  ansible.builtin.systemd_service:
     name: "{{ item }}"
     enabled: true
     daemon_reload: true
@@ -73,13 +73,13 @@
   when: compose_service_autoupdate|default(True)|bool
 
 - name: Start project service
-  ansible.builtin.systemd:
+  ansible.builtin.systemd_service:
     name: "{{ service_name }}.service"
     state: restarted
   when: compose_service_autostart|bool
 
 - name: Ensure service is not started (auto-start disabled)
-  ansible.builtin.systemd:
+  ansible.builtin.systemd_service:
     name: "{{ service_name }}.service"
     state: stopped
   when: not compose_service_autostart|bool

@@ -3,9 +3,9 @@
 - name: Confirm requirements present
   ansible.builtin.fail:
     msg: "Unable to proceed with role. Please confirm that both compose_project_name and compose_project_yaml are set when running the role."
-  when:
-    - compose_project_name is not None
-    - compose_project_yaml is not None 
+  when: >
+    compose_project_name is not defined or compose_project_name is none or
+    compose_project_yaml is not defined or compose_project_yaml is none
 
 - name: Check if docker is installed
   ansible.builtin.command: docker -v

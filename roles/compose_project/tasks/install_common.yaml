@@ -1,6 +1,4 @@
 ---
-# TODO: 1) Support podman eventually
-# TODO: 2) Support multiple registries in the same project?
 - name: Log in to the container registry
   community.docker.docker_login:
     username: "{{ docker_username }}"

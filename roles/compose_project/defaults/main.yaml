@@ -7,7 +7,7 @@ compose_systemd_user: null
 compose_systemd_scope: "{{ 'user' if compose_systemd_user is not None else 'system' }}"
 
 compose_project_name: null
-compose_projet_file: null
+compose_project_file: null
 compose_project_yaml: null
 compose_project_base_path: >-
   {{

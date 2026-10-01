@@ -7,7 +7,7 @@
       ansible.builtin.package:
         name:
           - systemd-container
-          - docker-rootless-extras-ce
+          - docker-ce-rootless-extras
         state: present
     
     - name: Check if user has linger enabled

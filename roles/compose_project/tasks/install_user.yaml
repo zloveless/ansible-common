@@ -1,0 +1,50 @@
+---
+- name: Elevate privileges
+  become: true
+  become_user: root
+  block:
+    - name: Ensure packages are installed
+      ansible.builtin.package:
+        name:
+          - systemd-container
+          - docker-rootless-extras-ce
+        state: present
+    
+    - name: Check if user has linger enabled
+      ansible.builtin.stat:
+        path: "{{ '/var/lib/systemd/linger/' + compose_systemd_user }}"
+      register: linger
+    
+    - name: Enable linger on user
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/loginctl
+          - enable-linger
+          - "{{ compose_systemd_user }}"
+      when: not linger.exists
+
+- name: "Configure docker rootless as {{ compose_systemd_user }}"
+  become: true
+  become_user: "{{ compose_systemd_user }}"
+  become_method: machinectl
+  block:
+    - name: Set up docker rootless
+      ansible.builtin.command: dockerd-rootless-setuptool.sh install
+    
+    - name: Ensure docker is running on the specified user
+      ansible.builtin.systemd_service:
+        name: docker
+        scope: user
+        state: started
+
+    - name: Create the compose project directory structure
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+        mode: "0600"
+      loop:
+        - "{{ compose_project_path }}/.docker/"
+        - "{{ compose_systemd_unit_path }}"
+    
+    

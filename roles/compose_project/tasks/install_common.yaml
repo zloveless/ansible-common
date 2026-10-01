@@ -1,0 +1,41 @@
+---
+# TODO: 1) Support podman eventually
+# TODO: 2) Support multiple registries in the same project?
+- name: Log in to the container registry
+  community.docker.docker_login:
+    username: "{{ docker_username }}"
+    password: "{{ docker_password }}"
+    registry_url: "{{ docker_registry_url }}"
+    config_path: "{{ compose_project_path }}/.docker/"
+  when: docker_registry_url is not null and docker_username is not null
+
+- name: Copy compose file to remote project path
+  ansible.builtin.copy:
+    dest: "{{ compose_project_file }}"
+    content: "{{ compose_project_yaml | to_nice_yaml }}"
+    mode: "0600"
+
+- name: Mark compose file as ansible_managed
+  ansible.builtin.lineinfile:
+    line: "#{{ ansible_managed }}"
+    insertbefore: BOF
+    path: "{{ compose_project_file }}"
+
+- name: Copy systemd service file
+  ansible.builtin.template:
+    src: "{{ item.template }}"
+    dest: "{{ compose_systemd_unit_path }}/{{ item.unit_file }}"
+    mode: "0644"
+  loop:
+    - template: "{{ role_path }}/templates/compose.service.j2"
+      unit_file: "{{ compose_project_service }}.service"
+
+- name: Install compose service for the project
+  ansible.buitin.systemd:
+    name: "{{ compose_project_service }}.service"
+    state: started
+    enabled: true
+    daemon_reload: true
+    masked: false
+    scope: "{{ compose_systemd_scope == 'user' | ternary('user', 'system') }}"
+  notify: Restart compose service

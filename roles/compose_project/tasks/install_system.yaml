@@ -1,0 +1,9 @@
+---
+- name: Create the compose project directory structure
+  ansible.builtin.file:
+    path: "{{ compose_project_path }}/.docker/"
+    state: directory
+    recurse: true
+    owner: root
+    group: root
+    mode: "0600"

@@ -1,0 +1,26 @@
+---
+compose_registry_url: null
+compose_registry_username: null
+compose_registry_password: null
+
+compose_systemd_user: null
+compose_systemd_scope: "{{ 'user' if compose_systemd_user is not None else 'system' }}"
+
+compose_project_name: null
+compose_project_yaml: null
+compose_project_base_path: >-
+  {{
+    '/opt/compose'
+    if compose_systemd_scope == 'system'
+    else ansible_user_dir ~ '/.local/share/compose'
+  }}
+
+# The systemd unit base path
+compose_systemd_unit_path: >-
+  {{
+    '/etc/systemd/system'
+    if compose_systemd_scope == 'system'
+    else compose_systemd_user_home + '/.config/systemd/user'
+  }}
+
+compose_service_prefix: "compose-"

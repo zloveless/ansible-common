@@ -26,10 +26,28 @@
 - name: "Configure docker rootless as {{ compose_systemd_user }}"
   become: true
   become_user: "{{ compose_systemd_user }}"
-  become_method: machinectl
   block:
-    - name: Set up docker rootless
-      ansible.builtin.command: dockerd-rootless-setuptool.sh install
+    - name: Check for rootless Docker systemd unit
+      ansible.builtin.stat:
+        path: "{{ ansible_user_dir }}/.config/systemd/user/docker.service"
+      register: rootless_docker_unit
+
+    # SEE: https://github.com/ansible/ansible/issues/86298
+    - name: "Configure docker rootless manually on {{ inventory_hostname }}"
+      ansible.builtin.pause:
+        prompt: >-
+          Ansible cannot currently create the required pam_systemd session
+          for {{ compose_systemd_user }} due to the machinectl/TTY issue.
+
+          Please log in directly
+              ssh -p {{ ansible_port }} {{ compose_systemd_user }}@{{ ansible_host }}
+          
+          and run:
+              dockerd-rootless-setuptool.sh install
+          
+          Then return here and press Enter to continue.
+        echo: false
+      when: not rootless_docker_unit.stat.exists
     
     - name: Ensure docker is running on the specified user
       ansible.builtin.systemd_service:

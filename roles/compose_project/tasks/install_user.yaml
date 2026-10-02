@@ -27,6 +27,7 @@
   become: true
   become_user: "{{ compose_systemd_user }}"
   become_method: machinectl
+  use_tty: true
   block:
     - name: Set up docker rootless
       ansible.builtin.command: dockerd-rootless-setuptool.sh install

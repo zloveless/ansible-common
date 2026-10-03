@@ -24,6 +24,7 @@
 
 - name: Set compose systemd user's home directory
   ansible.builtin.set_fact:
+    compose_systemd_user_uid: "{{ ansible_facts.getent_passwd[compose_systemd_user][1] }}"
     compose_systemd_user_home: "{{ ansible_facts.getent_passwd[compose_systemd_user][4] }}"
   when: compose_systemd_scope == 'user'
 

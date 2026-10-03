@@ -25,4 +25,11 @@ compose_systemd_unit_path: >-
     else compose_systemd_user_home + '/.config/systemd/user'
   }}
 
+compose_systemd_become_user: >-
+  {{
+    compose_systemd_user
+    if compose_systemd_scope == 'user'
+    else 'root'
+  }}
+
 compose_service_prefix: "compose-"

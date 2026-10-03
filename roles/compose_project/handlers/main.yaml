@@ -3,3 +3,8 @@
   ansible.builtin.systemd:
     name: "{{ compose_project_service }}"
     state: restarted
+    scope: "{{ compose_systemd_scope }}"
+  become: true
+  become_user: "{{ compose_systemd_become_user }}"
+  environment:
+    XDG_RUNTIME_DIR: "{{ '/run/user/' ~ compose_systemd_user_uid if compose_systemd_scope == 'user' else omit }}"

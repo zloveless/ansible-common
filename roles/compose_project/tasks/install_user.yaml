@@ -38,7 +38,7 @@
       ansible.builtin.pause:
         prompt: >-
           Ansible cannot currently create the required pam_systemd session
-          for {{ compose_systemd_user }} due to the machinectl/TTY issue.
+          for {{ compose_systemd_user }} due to a machinectl/TTY issue with ansible.
 
           Please log in directly
               ssh -p {{ ansible_port }} {{ compose_systemd_user }}@{{ ansible_host }}

@@ -14,7 +14,7 @@ compose_project_base_path: >-
   {{
     '/opt/compose'
     if compose_systemd_scope == 'system'
-    else compose_systemd_user_home ~ '/.local/share/compose'
+    else compose_systemd_user_home ~ '/.compose_projects'
   }}
 
 # The systemd unit base path

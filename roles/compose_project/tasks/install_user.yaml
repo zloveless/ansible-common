@@ -8,6 +8,7 @@
         name:
           - systemd-container
           - docker-ce-rootless-extras
+          - uidmap
         state: present
     
     - name: Check if user has linger enabled
@@ -29,7 +30,7 @@
   block:
     - name: Check for rootless Docker systemd unit
       ansible.builtin.stat:
-        path: "/home/{{ compose_systemd_user }}/.config/systemd/user/docker.service"
+        path: "{{ compose_systemd_user_home }}/.config/systemd/user/docker.service"
       register: rootless_docker_unit
 
     # SEE: https://github.com/ansible/ansible/issues/86298

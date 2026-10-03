@@ -9,11 +9,12 @@ compose_systemd_scope: "{{ 'user' if compose_systemd_user is not none else 'syst
 compose_project_name: null
 compose_project_file: null
 compose_project_yaml: null
+compose_systemd_user_home: null
 compose_project_base_path: >-
   {{
     '/opt/compose'
     if compose_systemd_scope == 'system'
-    else ansible_user_dir ~ '/.local/share/compose'
+    else compose_systemd_user_home ~ '/.local/share/compose'
   }}
 
 # The systemd unit base path

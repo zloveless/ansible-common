@@ -18,6 +18,15 @@
     msg: "Docker and Docker Compose need to be installed before using this role."
   when: docker_check.rc != 0
 
+- name: Get compose systemd user's passwd entry
+  ansible.builtin.getent:
+    database: passwd
+
+- name: Set compose systemd user's home directory
+  ansible.builtin.set_fact:
+    compose_systemd_user_home: "{{ ansible_facts.getent_passwd[compose_systemd_user][4] }}"
+  when: compose_systemd_scope == 'user'
+
 - name: Update project path
   ansible.builtin.set_fact:
     compose_project_path: "{{ compose_project_base_path }}/{{ compose_project_name }}"

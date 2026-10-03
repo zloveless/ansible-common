@@ -31,7 +31,7 @@
 - name: Update project path
   ansible.builtin.set_fact:
     compose_project_path: "{{ compose_project_base_path }}/{{ compose_project_name }}"
-    compose_service_name: "{{ compose_service_prefix }}{{ compose_project_name }}"
+    compose_project_service: "{{ compose_service_prefix }}{{ compose_project_name }}"
   changed_when: false
 
 - name: Update project file name

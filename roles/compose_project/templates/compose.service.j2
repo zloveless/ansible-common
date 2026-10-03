@@ -1,14 +1,14 @@
 [Unit]
-Description=Manages the {{ project_name }} docker-compose systemd services
+Description=Manages the {{ compose_project_name }} docker-compose systemd services
 
 [Service]
 Type=oneshot
-WorkingDirectory={{ project_path }}
-SyslogIdentifier={{ project_name }}
+WorkingDirectory={{ compose_project_path }}
+SyslogIdentifier={{ compose_project_name }}
 RemainAfterExit=yes
 
-{% if docker_registry_url != "" or docker_username != "" %}
-Environment="DOCKER_CONFIG={{ project_path }}/.docker/"
+{% if compose_registry_url != "" or compose_registry_username != "" %}
+Environment="DOCKER_CONFIG={{ compose_project_path }}/.docker/"
 {% endif %}
 
 ExecStartPre=-/usr/bin/docker compose pull --quiet --ignore-pull-failures

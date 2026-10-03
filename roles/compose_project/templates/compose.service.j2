@@ -7,9 +7,12 @@ WorkingDirectory={{ compose_project_path }}
 SyslogIdentifier={{ compose_project_name }}
 RemainAfterExit=yes
 
-{% if compose_registry_url != "" or compose_registry_username != "" %}
+{% if compose_registry_url is not none or compose_registry_username is not none -%}
 Environment="DOCKER_CONFIG={{ compose_project_path }}/.docker/"
-{% endif %}
+{% endif -%}
+{% if compose_systemd_scope == 'user' -%}
+Environment="DOCKER_HOST=unix:///run/user/{{ compose_systemd_user_uid }}/docker.sock"
+{% endif -%}
 
 ExecStartPre=-/usr/bin/docker compose pull --quiet --ignore-pull-failures
 ExecStart=/usr/bin/docker compose up -d --remove-orphans

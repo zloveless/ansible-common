@@ -29,7 +29,7 @@
       unit_file: "{{ compose_project_service }}.service"
 
 - name: Install compose service for the project
-  ansible.buitin.systemd:
+  ansible.builtin.systemd:
     name: "{{ compose_project_service }}.service"
     state: started
     enabled: true

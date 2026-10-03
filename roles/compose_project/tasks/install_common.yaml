@@ -5,28 +5,37 @@
     password: "{{ compose_registry_password }}"
     registry_url: "{{ compose_registry_url }}"
     config_path: "{{ compose_project_path }}/.docker/"
+  become: true
+  become_user: "{{ compose_systemd_user if compose_systemd_scope == 'user' else 'root' }}"
   when: compose_registry_url is not none and compose_registry_username is not none
-
+  
 - name: Copy compose file to remote project path
   ansible.builtin.copy:
     dest: "{{ compose_project_file }}"
     content: "{{ compose_project_yaml | to_nice_yaml }}"
     mode: "0600"
+    owner: "{{ compose_systemd_user if compose_systemd_scope == 'user' else omit }}"
+    group: "{{ compose_systemd_user if compose_systemd_scope == 'user' else omit }}"
+  become: true
 
 - name: Mark compose file as ansible_managed
   ansible.builtin.lineinfile:
     line: "#{{ ansible_managed }}"
     insertbefore: BOF
     path: "{{ compose_project_file }}"
+  become: true
 
 - name: Copy systemd service file
   ansible.builtin.template:
     src: "{{ item.template }}"
     dest: "{{ compose_systemd_unit_path }}/{{ item.unit_file }}"
     mode: "0644"
+    owner: "{{ compose_systemd_user if compose_systemd_scope == 'user' else omit }}"
+    group: "{{ compose_systemd_user if compose_systemd_scope == 'user' else omit }}"
   loop:
     - template: "{{ role_path }}/templates/compose.service.j2"
       unit_file: "{{ compose_project_service }}.service"
+  become: true
 
 - name: Install compose service for the project
   ansible.builtin.systemd:
@@ -35,5 +44,7 @@
     enabled: true
     daemon_reload: true
     masked: false
-    scope: "{{ compose_systemd_scope == 'user' | ternary('user', 'system') }}"
+    scope: "{{ compose_systemd_scope }}"
+  become: true
+  become_user: "{{ compose_systemd_user if compose_systemd_scope == 'user' else 'root' }}"
   notify: Restart compose service

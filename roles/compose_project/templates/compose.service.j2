@@ -1,10 +1,12 @@
 [Unit]
 Description=Manages the {{ compose_project_name }} docker-compose systemd services
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Type=oneshot
 WorkingDirectory={{ compose_project_path }}
-SyslogIdentifier={{ compose_project_name }}
+SyslogIdentifier={{ compose_project_service }}
 RemainAfterExit=yes
 
 {% if compose_registry_url is not none or compose_registry_username is not none -%}

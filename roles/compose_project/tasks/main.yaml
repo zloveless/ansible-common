@@ -36,7 +36,7 @@
 
 - name: Update project file name
   ansible.builtin.set_fact:
-    compose_project_file: "{{ compose_project_path }}/{{ compose_project_name }}.compose.yaml"
+    compose_project_file: "{{ compose_project_path }}/docker-compose.yaml"
   changed_when: false
 
 - name: Set up rootful installation

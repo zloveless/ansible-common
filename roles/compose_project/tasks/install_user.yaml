@@ -60,10 +60,6 @@
       ansible.builtin.file:
         path: "{{ item }}"
         state: directory
-        recurse: true
-        mode: "0600"
+        mode: "0700"
       loop:
         - "{{ compose_project_path }}/.docker/"
-        - "{{ compose_systemd_unit_path }}"
-    
-    

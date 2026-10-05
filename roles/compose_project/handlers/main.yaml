@@ -2,7 +2,7 @@
 - name: Restart compose service
   ansible.builtin.systemd:
     name: "{{ compose_project_service }}"
-    state: restarted
+    state: reloaded
     scope: "{{ compose_systemd_scope }}"
   become: true
   become_user: "{{ compose_systemd_become_user }}"

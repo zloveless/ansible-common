@@ -17,13 +17,7 @@
     owner: "{{ compose_systemd_user if compose_systemd_scope == 'user' else omit }}"
     group: "{{ compose_systemd_user if compose_systemd_scope == 'user' else omit }}"
   become: true
-
-- name: Mark compose file as ansible_managed
-  ansible.builtin.lineinfile:
-    line: "#{{ ansible_managed }}"
-    insertbefore: BOF
-    path: "{{ compose_project_file }}"
-  become: true
+  notify: Restart compose service
 
 - name: Copy systemd service file
   ansible.builtin.template:

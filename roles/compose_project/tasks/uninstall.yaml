@@ -1,20 +1,12 @@
 ---
-- name: Stop systemd service for docker-compose
-  ansible.builtin.systemd:
-    name: "{{ project_name }}.service"
-    state: stopped
+- name: Unsupported operation. Please do the following manually.
+  ansible.builtin.fail:
+    msg: >-
+      Uninstalling is unsupported for the role right now.
+      To uninstall
+      
+      Please log in directly:
+        ssh -p {{ ansible_port }} {{ compose_systemd_user | default(ansible_user, true) }}@{{ ansible_host }}
 
-- name: Uninstall systemd services and timers
-  ansible.builtin.systemd:
-    name: "{{ item }}"
-    masked: true
-    daemon_reload: true
-  with_items:
-    - "{{ project_name }}.service"
-    - "{{ project_name }}-cron.service"
-    - "{{ project_name }}-cron.timer"
-
-- name: Remove docker-compose.yaml and clean up project directories
-  ansible.builtin.file:
-    path: "{{ project_path }}"
-    state: absent
+      and run:
+        systemctl {{ '--user' if compose_systemd_scope == 'user' else '' }} disable --now {{ compose_project_service }}

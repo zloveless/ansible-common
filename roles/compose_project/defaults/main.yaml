@@ -10,11 +10,12 @@ compose_project_name: null
 compose_project_file: null
 compose_project_yaml: null
 compose_systemd_user_home: null
+compose_project_base_path_suffix: "/.compose_projects"
 compose_project_base_path: >-
   {{
     '/opt/compose'
     if compose_systemd_scope == 'system'
-    else compose_systemd_user_home ~ '/.compose_projects'
+    else compose_systemd_user_home ~ compose_project_base_path_suffix
   }}
 
 # The systemd unit base path
